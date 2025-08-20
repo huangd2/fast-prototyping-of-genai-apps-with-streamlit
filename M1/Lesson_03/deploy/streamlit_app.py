@@ -8,6 +8,7 @@ import string
 import re
 import os
 
+# temp: forcing git to detect change
 def clean_text(text):
     """
     Cleans the input text by removing punctuation, converting to lowercase, and stripping whitespace.
