@@ -1,15 +1,33 @@
 # import packages
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import plotly.express as px
+import altair as alt
+import string
 import re
 import os
 
-
-# Helper function to clean text
 def clean_text(text):
-    text = text.lower().strip()
-    text = re.sub(r'[^\w\s]', '', text)
+    """
+    Cleans the input text by removing punctuation, converting to lowercase, and stripping whitespace.
+    """
+    # Remove punctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    # Convert to lowercase
+    text = text.lower()
+    # Strip leading and trailing whitespace
+    text = text.strip()
     return text
+
+
+# Helper function to get dataset path
+def get_dataset_path():
+    # Go up from the current file to the project root
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    # Construct the path to the CSV in the top-level data folder
+    csv_path = os.path.join(project_root, "data", "customer_reviews.csv")
+    return csv_path
 
 
 st.title("Hello, GenAI!")
@@ -20,8 +38,16 @@ col1, col2 = st.columns(2)
 
 with col1:
     if st.button("📥 Ingest Dataset"):
+        # pass
         try:
-            st.session_state["df"] = pd.read_csv("customer_reviews.csv")
+            csv_path = get_dataset_path()
+            # An important thing you should notice here is that the data frame was not simply saved to a df variable as usually done, 
+            # but to something called a session state. The reason you need to do this is that Streamlit reruns the entire script from 
+            # top to bottom. Every time the user interacts with the app. This means that if you click a button, all the variables are lost. 
+            # Unless you store them somewhere that's persistent between runs. To achieve this, you can use something called session state.
+            # By storing the data frame in st.session_state df, your app remembers it even if the script runs again. This allows the user 
+            # to ingest the data set that later perform operations on it without the need to ingest it again. 
+            st.session_state["df"] = pd.read_csv(csv_path)
             st.success("Dataset loaded successfully!")
         except FileNotFoundError:
             st.error("Dataset not found. Please check the file path.")
@@ -29,7 +55,7 @@ with col1:
 with col2:
     if st.button("🧹 Parse Reviews"):
         if "df" in st.session_state:
-            st.session_state["df"]["CLEANED_SUMMARY"] = st.session_state["df"]["SUMMARY"].apply(clean_text)
+            st.session_state["df"]["CLEANED_SUMMARY "] = st.session_state["df"]["SUMMARY"].apply(clean_text)
             st.success("Reviews parsed and cleaned!")
         else:
             st.warning("Please ingest the dataset first.")
